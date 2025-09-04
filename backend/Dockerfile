@@ -1,22 +1,21 @@
-FROM node:18-slim
+FROM node:18
 
-# Install dependencies
+# install yt-dlp + ffmpeg from apt
 RUN apt-get update && apt-get install -y \
     ffmpeg \
-    python3 \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
+    && chmod a+rx /usr/local/bin/yt-dlp
 
-# Install yt-dlp
-RUN pip3 install yt-dlp
-
+# set workdir
 WORKDIR /app
 
+# copy files
 COPY package*.json ./
 RUN npm install
-
 COPY . .
 
-EXPOSE 5000
+# expose port
+EXPOSE 8080
 
 CMD ["npm", "start"]
