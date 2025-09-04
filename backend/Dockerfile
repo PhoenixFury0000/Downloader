@@ -1,6 +1,6 @@
 FROM node:20
 
-# install yt-dlp + ffmpeg
+# Install ffmpeg + yt-dlp
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl \
@@ -9,15 +9,20 @@ RUN apt-get update && apt-get install -y \
     && chmod a+rx /usr/local/bin/yt-dlp \
     && rm -rf /var/lib/apt/lists/*
 
+# Set work directory inside container
 WORKDIR /app
 
-# 👇 Copy from backend folder
-COPY backend/package*.json ./
+# Copy package.json (same folder as Dockerfile)
+COPY package*.json ./
 
+# Install dependencies
 RUN npm install --omit=dev || npm install
 
-# 👇 Copy all backend source files
-COPY backend ./
+# Copy the rest of the backend files
+COPY . .
 
+# Expose backend port
 EXPOSE 8080
+
+# Start server
 CMD ["npm", "start"]
