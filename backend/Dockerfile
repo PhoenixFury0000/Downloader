@@ -1,5 +1,5 @@
-# Use Node.js 20 LTS
-FROM node:20-slim
+# Use Node.js 20 full image (not slim to avoid npm errors)
+FROM node:20
 
 # Install ffmpeg + yt-dlp
 RUN apt-get update && apt-get install -y \
@@ -10,14 +10,14 @@ RUN apt-get update && apt-get install -y \
     && chmod a+rx /usr/local/bin/yt-dlp \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working dir inside container
+# Set workdir
 WORKDIR /app
 
-# Copy package.json first for caching
-COPY package*.json ./
+# Copy package.json first
+COPY package.json package-lock.json* ./
 
-# Install deps
-RUN npm install --omit=dev
+# ✅ Install deps (no dev dependencies needed in production)
+RUN npm install --omit=dev || npm install
 
 # Copy rest of the app
 COPY . .
