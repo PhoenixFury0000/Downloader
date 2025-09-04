@@ -1,21 +1,29 @@
-FROM node:18
+# Use Node.js 20 LTS slim image
+FROM node:20-slim
 
-# install yt-dlp + ffmpeg from apt
+# Install yt-dlp and ffmpeg
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl \
+    ca-certificates \
     && curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp \
-    && chmod a+rx /usr/local/bin/yt-dlp
+    && chmod a+rx /usr/local/bin/yt-dlp \
+    && rm -rf /var/lib/apt/lists/*
 
-# set workdir
+# Set workdir
 WORKDIR /app
 
-# copy files
-COPY package*.json ./
-RUN npm install
+# Copy only package.json first for caching
+COPY package.json ./
+
+# Install production deps
+RUN npm install --omit=dev
+
+# Copy rest of the app
 COPY . .
 
-# expose port
+# Expose port
 EXPOSE 8080
 
+# Run server
 CMD ["npm", "start"]
