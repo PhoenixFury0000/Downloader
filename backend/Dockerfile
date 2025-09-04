@@ -1,7 +1,6 @@
-# Use Node.js 20 full image (not slim to avoid npm errors)
 FROM node:20
 
-# Install ffmpeg + yt-dlp
+# install yt-dlp + ffmpeg
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     curl \
@@ -10,20 +9,15 @@ RUN apt-get update && apt-get install -y \
     && chmod a+rx /usr/local/bin/yt-dlp \
     && rm -rf /var/lib/apt/lists/*
 
-# Set workdir
 WORKDIR /app
 
-# Copy package.json first
-COPY package.json package-lock.json* ./
+# 👇 Copy from backend folder
+COPY backend/package*.json ./
 
-# ✅ Install deps (no dev dependencies needed in production)
 RUN npm install --omit=dev || npm install
 
-# Copy rest of the app
-COPY . .
+# 👇 Copy all backend source files
+COPY backend ./
 
-# Expose port
 EXPOSE 8080
-
-# Start app
 CMD ["npm", "start"]
