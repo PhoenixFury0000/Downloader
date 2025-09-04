@@ -1,0 +1,30 @@
+import express from "express";
+import { downloadMedia } from "../utils/downloader.js";
+
+const router = express.Router();
+
+/**
+ * POST /api/download
+ * Body: { url: string, format: "mp3" | "mp4" }
+ */
+router.post("/download", async (req, res) => {
+  const { url, format } = req.body;
+
+  if (!url) {
+    return res.status(400).json({ error: "❌ URL is required" });
+  }
+
+  try {
+    const fileStream = await downloadMedia(url, format);
+
+    res.setHeader("Content-Disposition", `attachment; filename=media.${format}`);
+    res.setHeader("Content-Type", format === "mp3" ? "audio/mpeg" : "video/mp4");
+
+    fileStream.pipe(res);
+  } catch (err) {
+    console.error("Download error:", err);
+    res.status(500).json({ error: "Failed to download media" });
+  }
+});
+
+export default router;
